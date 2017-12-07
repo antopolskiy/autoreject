@@ -445,9 +445,10 @@ class LocalAutoReject(BaseAutoReject):
             raise ValueError('"consensus_perc" must be between 0 and 1. '
                              'You gave me %s.' % consensus_perc)
         self.consensus_perc = {
-            ch: consensus_perc for ch in ('mag', 'grad', 'eeg')}
+            ch: consensus_perc for ch in ('mag', 'grad', 'eeg', 'misc')}
         self.n_interpolate = {
             ch: n_interpolate for ch in ('mag', 'grad', 'eeg')}
+        self.n_interpolate['misc'] = 0
         self.thresh_func = thresh_func
         self.picks = picks
         self.verbose = verbose
