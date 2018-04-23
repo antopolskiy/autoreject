@@ -497,6 +497,7 @@ class LocalAutoReject(BaseAutoReject):
         for epoch_idx in range(len(epochs)):
             n_bads = drop_log[epoch_idx, self.picks].sum()
             if n_bads == 0:
+                interp_channels.append([])
                 continue
             else:
                 if n_bads <= n_interpolate:
@@ -547,7 +548,7 @@ class LocalAutoReject(BaseAutoReject):
 
         interp_channels, fix_log = self._get_epochs_interpolation(
             epochs, drop_log=drop_log, ch_type=ch_type)
-
+        assert len(interp_channels) == len(drop_log) == len(epochs)
         (bad_epochs_idx, sorted_epoch_idx,
          n_epochs_drop) = self._get_bad_epochs(
              bad_sensor_counts, ch_type=ch_type)
@@ -884,10 +885,11 @@ class LocalAutoRejectCV(object):
 
                     bad_epochs_idx, _, _ = local_reject._get_bad_epochs(
                         bad_sensor_counts, ch_type=ch_type)
+                    bad_epochs_mask = np.zeros(len(epochs), dtype=np.bool)
+                    bad_epochs_mask[bad_epochs_idx] = True
                     local_reject.bad_epochs_idx_ = np.sort(bad_epochs_idx)
-                    n_train = len(epochs[train])
-                    good_epochs_idx = np.setdiff1d(np.arange(n_train),
-                                                   bad_epochs_idx)
+                    good_epochs_mask = np.invert(bad_epochs_mask)
+                    good_epochs_idx = np.where(good_epochs_mask[train])[0]
                     local_reject.mean_ = _slicemean(
                         epochs_interp[train].get_data()[:, self.picks],
                         good_epochs_idx, axis=0)
